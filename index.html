@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>數位安全素養檢測站</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ===== CSS 自訂變數 ===== */
+  :root {
+    --color-bg: #0d0d1a;
+    --color-surface: #1a1a2e;
+    --color-surface2: #16213e;
+    --color-primary: #00e5ff;
+    --color-secondary: #7c4dff;
+    --color-level1: #2196f3;
+    --color-level2: #9c27b0;
+    --color-level3: #ff6f00;
+    --color-success: #00c853;
+    --color-error: #d50000;
+    --color-warning: #ff6d00;
+    --color-text: #e0e0e0;
+    --color-text-muted: #9e9e9e;
+    --radius: 14px;
+    --font: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  }
+
+  /* ===== 重置與基礎 ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font);
+    background: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ===== 科技格線背景 ===== */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== 畫面容器 ===== */
+  .screen {
+    display: none;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+  .screen.active { display: block; animation: fadeInUp .4s ease; }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  /* ===== 動畫 @keyframes ===== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(60px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideOutLeft {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-60px); }
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    15%     { transform: translateX(-8px); }
+    30%     { transform: translateX(8px); }
+    45%     { transform: translateX(-6px); }
+    60%     { transform: translateX(6px); }
+    75%     { transform: translateX(-3px); }
+    90%     { transform: translateX(3px); }
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(0,229,255,.5); }
+    50%     { box-shadow: 0 0 0 14px rgba(0,229,255,0); }
+  }
+  @keyframes scaleIn {
+    0%   { transform: scale(0); opacity: 0; }
+    70%  { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes glowBorder {
+    0%,100% { box-shadow: 0 0 8px rgba(0,229,255,.4); }
+    50%     { box-shadow: 0 0 24px rgba(0,229,255,.9); }
+  }
+  @keyframes confettiDrop {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(80px) rotate(360deg); opacity: 0; }
+  }
+  @keyframes cardAppear {
+    from { opacity: 0; transform: translateY(16px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ===== 通用元件 ===== */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 14px 32px;
+    border: none; border-radius: var(--radius);
+    font-family: var(--font); font-size: 1rem; font-weight: 700;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, background .2s;
+    text-decoration: none;
+  }
+  .btn:hover  { transform: scale(1.04); }
+  .btn:active { transform: scale(.97); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), #0097a7);
+    color: #0d0d1a;
+    animation: pulse 2s infinite;
+  }
+  .btn-secondary {
+    background: var(--color-surface2);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: .9rem;
+    padding: 8px 16px;
+  }
+  .btn-ghost:hover { color: var(--color-text); }
+
+  .card {
+    background: var(--color-surface);
+    border-radius: var(--radius);
+    padding: 24px;
+    border: 1px solid rgba(0,229,255,.12);
+  }
+
+  /* ===== 畫面 1：歡迎頁 ===== */
+  #screen-1 { padding-bottom: 40px; }
+
+  .logo-wrap {
+    text-align: center;
+    padding-top: 48px;
+    animation: fadeInUp .6s ease;
+  }
+  .logo-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 16px var(--color-primary));
+  }
+  .site-title {
+    font-size: 1.9rem; font-weight: 900;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 6px;
+  }
+  .site-subtitle { color: var(--color-text-muted); font-size: .95rem; }
+
+  .intro-text {
+    text-align: center;
+    margin: 20px 0 28px;
+    color: var(--color-text-muted);
+    line-height: 1.8;
+    font-size: .95rem;
+  }
+  .intro-text strong { color: var(--color-primary); }
+
+  .level-cards {
+    display: flex; gap: 14px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 28px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) transparent;
+  }
+  .level-card {
+    min-width: 200px; flex: 1;
+    padding: 18px;
+    border-radius: var(--radius);
+    border: 1px solid;
+    text-align: center;
+    animation: cardAppear .5s ease both;
+  }
+  .level-card:nth-child(1) { border-color: var(--color-level1); background: rgba(33,150,243,.08); animation-delay:.1s; }
+  .level-card:nth-child(2) { border-color: var(--color-level2); background: rgba(156,39,176,.08); animation-delay:.3s; }
+  .level-card:nth-child(3) { border-color: var(--color-level3); background: rgba(255,111,0,.08); animation-delay:.5s; }
+  .level-card .lc-icon  { font-size: 2rem; margin-bottom: 6px; display: block; }
+  .level-card .lc-title { font-weight: 700; font-size: .95rem; margin-bottom: 4px; }
+  .level-card .lc-sub   { font-size: .8rem; color: var(--color-text-muted); }
+
+  .start-area { text-align: center; }
+  .start-area .btn-primary { font-size: 1.1rem; padding: 16px 48px; }
+  .start-hint { margin-top: 12px; color: var(--color-text-muted); font-size: .85rem; }
+
+  /* ===== 畫面 2：基本資料 ===== */
+  #screen-2 .card { max-width: 480px; margin: 60px auto; }
+  #screen-2 h2 { font-size: 1.4rem; margin-bottom: 20px; text-align:center; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: .9rem; margin-bottom: 6px; color: var(--color-text-muted); }
+  .form-group select {
+    width: 100%; padding: 10px 14px;
+    background: var(--color-bg); color: var(--color-text);
+    border: 1px solid rgba(0,229,255,.3); border-radius: 8px;
+    font-family: var(--font); font-size: .95rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%2300e5ff'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+    cursor: pointer;
+  }
+  .form-group select:focus { outline: none; border-color: var(--color-primary); }
+
+  .form-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; text-align: center; }
+
+  /* ===== 畫面 3：測驗主畫面 ===== */
+  #screen-3 { padding-bottom: 40px; }
+
+  .quiz-header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(13,13,26,.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0,229,255,.1);
+    padding: 12px 0; margin-bottom: 20px;
+  }
+  .quiz-header .container { padding-top: 0; padding-bottom: 0; }
+
+  .header-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 8px;
+  }
+  .q-counter { font-size: .85rem; color: var(--color-text-muted); white-space: nowrap; }
+  .q-counter strong { color: var(--color-primary); font-size: 1rem; }
+  .q-score { font-size: .85rem; color: var(--color-text-muted); white-space: nowrap; }
+  .q-score strong { color: var(--color-success); font-size: 1rem; }
+
+  .progress-wrap { flex: 1; }
+  .progress-bar {
+    height: 6px; background: rgba(255,255,255,.1);
+    border-radius: 99px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    border-radius: 99px;
+    transition: width .5s ease;
+    width: 0%;
+  }
+
+  .level-progress {
+    display: flex; gap: 4px;
+  }
+  .lp-segment {
+    flex: 1; height: 4px; border-radius: 99px;
+    background: rgba(255,255,255,.08);
+    position: relative; overflow: hidden;
+  }
+  .lp-segment::after {
+    content: '';
+    position: absolute; top: 0; left: 0; height: 100%;
+    width: 0%; border-radius: 99px;
+    transition: width .4s ease;
+  }
+  .lp-1::after { background: var(--color-level1); }
+  .lp-2::after { background: var(--color-level2); }
+  .lp-3::after { background: var(--color-level3); }
+
+  /* 題目卡片 */
+  .question-card {
+    animation: slideInRight .35s ease;
+    position: relative;
+  }
+  .question-card.leaving { animation: slideOutLeft .3s ease forwards; }
+
+  .category-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: .78rem; font-weight: 700;
+    margin-bottom: 12px;
+    border: 1px solid;
+  }
+
+  .scenario-box {
+    background: rgba(255,255,255,.05);
+    border-left: 3px solid var(--color-primary);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: .88rem; color: var(--color-text-muted); line-height: 1.6;
+  }
+  .scenario-box::before { content: '📍 情境：'; font-weight: 700; color: var(--color-primary); }
+
+  .question-text {
+    font-size: 1.05rem; font-weight: 700; line-height: 1.7;
+    margin-bottom: 18px;
+  }
+
+  .options-grid {
+    display: grid; gap: 10px;
+    grid-template-columns: 1fr 1fr;
+  }
+  @media(max-width:640px) { .options-grid { grid-template-columns: 1fr; } }
+
+  .option-btn {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 14px;
+    background: var(--color-surface2);
+    border: 1.5px solid rgba(255,255,255,.1);
+    border-radius: 10px;
+    color: var(--color-text);
+    font-family: var(--font); font-size: .9rem;
+    cursor: pointer; text-align: left; line-height: 1.5;
+    transition: border-color .2s, background .2s, transform .1s;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background: rgba(0,229,255,.08);
+    transform: translateY(-1px);
+  }
+  .option-btn:disabled { cursor: default; }
+  .option-letter {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    background: rgba(0,229,255,.15);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .85rem; color: var(--color-primary);
+  }
+
+  .option-btn.correct {
+    border-color: var(--color-success);
+    background: rgba(0,200,83,.15);
+  }
+  .option-btn.correct .option-letter {
+    background: var(--color-success); color: #fff;
+  }
+  .option-btn.wrong {
+    border-color: var(--color-error);
+    background: rgba(213,0,0,.15);
+    animation: shake .5s ease;
+  }
+  .option-btn.wrong .option-letter {
+    background: var(--color-error); color: #fff;
+  }
+
+  /* 解析卡 */
+  .explanation-card {
+    margin-top: 16px;
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    animation: fadeInUp .35s ease;
+    display: none;
+  }
+  .explanation-card.show { display: block; }
+  .explanation-card.correct-card {
+    background: rgba(0,200,83,.1); border: 1px solid var(--color-success);
+  }
+  .explanation-card.wrong-card {
+    background: rgba(255,109,0,.1); border: 1px solid var(--color-warning);
+  }
+  .exp-title { font-weight: 900; font-size: 1rem; margin-bottom: 10px; }
+  .exp-correct .exp-title { color: var(--color-success); }
+  .exp-wrong   .exp-title { color: var(--color-warning); }
+  .exp-section { margin-bottom: 8px; font-size: .88rem; line-height: 1.7; }
+  .exp-label { font-weight: 700; color: var(--color-primary); }
+  .exp-resource { font-size: .84rem; color: var(--color-text-muted); }
+
+  .next-btn-wrap { text-align: right; margin-top: 14px; }
+  .next-btn-wrap .btn { font-size: .95rem; }
+
+  /* ===== 畫面 4：結果頁 ===== */
+  #screen-4 { padding-bottom: 60px; }
+
+  .result-header { text-align: center; padding: 40px 0 24px; }
+  .achievement-badge {
+    font-size: 4.5rem;
+    display: inline-block;
+    animation: scaleIn .6s cubic-bezier(.34,1.56,.64,1) both;
+    filter: drop-shadow(0 0 24px gold);
+  }
+  .result-title {
+    font-size: 1.8rem; font-weight: 900; margin: 12px 0 6px;
+    background: linear-gradient(135deg, #ffd700, #ff9800);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .result-title.level1 { background: linear-gradient(135deg, var(--color-level1), #90caf9);
+    -webkit-background-clip: text; background-clip: text; }
+  .result-title.level2 { background: linear-gradient(135deg, #c0c0c0, #e0e0e0);
+    -webkit-background-clip: text; background-clip: text; }
+  .result-title.level3 { background: linear-gradient(135deg, #ffd700, #ff9800);
+    -webkit-background-clip: text; background-clip: text; }
+  .result-subtitle { color: var(--color-text-muted); font-size: .95rem; margin-bottom: 20px; }
+
+  .score-display {
+    font-size: 3.5rem; font-weight: 900; color: var(--color-primary);
+    text-align: center; margin: 16px 0;
+  }
+  .score-display span { font-size: 1.4rem; color: var(--color-text-muted); }
+
+  .score-breakdown {
+    display: flex; justify-content: center; gap: 24px;
+    margin-bottom: 28px; flex-wrap: wrap;
+  }
+  .sb-item { text-align: center; }
+  .sb-label { font-size: .78rem; color: var(--color-text-muted); margin-bottom: 2px; }
+  .sb-val { font-size: 1.2rem; font-weight: 700; }
+  .sb-1 .sb-val { color: var(--color-level1); }
+  .sb-2 .sb-val { color: var(--color-level2); }
+  .sb-3 .sb-val { color: var(--color-level3); }
+
+  .radar-wrap {
+    text-align: center; margin: 0 auto 28px;
+    max-width: 320px;
+  }
+  #radarCanvas { display: block; margin: 0 auto; }
+
+  /* 錯題回顧 */
+  .review-section { margin-bottom: 28px; }
+  .review-title {
+    font-size: 1.05rem; font-weight: 700; margin-bottom: 12px;
+    color: var(--color-text-muted);
+  }
+  .review-item {
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .review-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; cursor: pointer;
+    background: var(--color-surface);
+    transition: background .2s;
+  }
+  .review-header:hover { background: var(--color-surface2); }
+  .review-cat { font-size: .75rem; }
+  .review-q { flex: 1; font-size: .88rem; }
+  .review-toggle { font-size: .9rem; color: var(--color-text-muted); transition: transform .2s; }
+  .review-item.open .review-toggle { transform: rotate(180deg); }
+  .review-body {
+    display: none;
+    padding: 12px 14px;
+    background: rgba(255,255,255,.03);
+    font-size: .85rem; line-height: 1.7;
+  }
+  .review-item.open .review-body { display: block; }
+  .review-answers { display: flex; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
+  .ra-wrong { color: var(--color-error); }
+  .ra-correct { color: var(--color-success); }
+
+  /* 學習資源 */
+  .resources-section { margin-bottom: 28px; }
+  .resources-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; }
+  .resource-cards { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+  @media(max-width:640px) { .resource-cards { grid-template-columns: 1fr; } }
+  .resource-card {
+    background: var(--color-surface);
+    border: 1px solid rgba(0,229,255,.12);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex; flex-direction: column; gap: 6px;
+    transition: border-color .2s;
+  }
+  .resource-card:hover { border-color: var(--color-primary); }
+  .rc-icon { font-size: 1.4rem; }
+  .rc-name { font-weight: 700; font-size: .9rem; }
+  .rc-desc { font-size: .78rem; color: var(--color-text-muted); flex: 1; }
+  .rc-link {
+    display: inline-block; padding: 5px 12px;
+    background: rgba(0,229,255,.12); border: 1px solid rgba(0,229,255,.3);
+    border-radius: 6px; color: var(--color-primary);
+    font-size: .78rem; text-decoration: none; font-weight: 700;
+    transition: background .2s;
+    align-self: flex-start;
+  }
+  .rc-link:hover { background: rgba(0,229,255,.25); }
+
+  .result-actions {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  /* ===== 姓名輸入 Modal ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,.72);
+    backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: var(--color-surface);
+    border: 1.5px solid rgba(0,229,255,.3);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    width: min(420px, 90vw);
+    animation: fadeInUp .3s ease;
+    text-align: center;
+  }
+  .modal-icon  { font-size: 2.6rem; margin-bottom: 10px; }
+  .modal-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub   { font-size: .88rem; color: var(--color-text-muted); margin-bottom: 20px; }
+  .modal-input {
+    width: 100%; padding: 12px 16px;
+    background: var(--color-bg); color: var(--color-text);
+    border: 1.5px solid rgba(0,229,255,.35); border-radius: 10px;
+    font-family: var(--font); font-size: 1.05rem; text-align: center;
+    margin-bottom: 18px; outline: none;
+    transition: border-color .2s;
+  }
+  .modal-input:focus { border-color: var(--color-primary); }
+  .modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+  /* 通知 toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--color-success); color: #fff;
+    padding: 10px 22px; border-radius: 99px; font-size: .9rem; font-weight: 700;
+    z-index: 1000; opacity: 0; pointer-events: none;
+    transition: opacity .3s;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ===== 手機響應 ===== */
+  @media(max-width:768px) {
+    .site-title { font-size: 1.4rem; }
+    .logo-icon  { font-size: 3rem; }
+    .question-text { font-size: 1rem; }
+    .option-btn { font-size: .86rem; }
+    .score-display { font-size: 2.8rem; }
+    .result-title  { font-size: 1.4rem; }
+    #radarCanvas   { max-width: 250px; max-height: 250px; }
+  }
+
+  /* ===== 彩帶粒子 ===== */
+  .confetti-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 0;
+    pointer-events: none; z-index: 999; overflow: visible;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    animation: confettiDrop 1s ease-in both;
+  }
+</style>
+</head>
+<body>
+
+<!-- 彩帶容器 -->
+<div class="confetti-container" id="confettiContainer"></div>
+
+<!-- 姓名輸入 Modal -->
+<div class="modal-overlay" id="nameModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <div class="modal-icon">🎓</div>
+    <div class="modal-title" id="modalTitle">請輸入你的名字</div>
+    <div class="modal-sub">名字將印在專屬證書上，可使用中文或英文</div>
+    <input class="modal-input" id="nameInput" type="text" maxlength="20"
+      placeholder="例：王小明 / Ming Wang"
+      aria-label="輸入姓名"
+      onkeydown="if(event.key==='Enter') confirmCertificate()">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeNameModal()" aria-label="取消">取消</button>
+      <button class="btn btn-primary" onclick="confirmCertificate()" aria-label="確認並下載證書">確認下載 →</button>
+    </div>
+  </div>
+</div>
+<!-- Toast 通知 -->
+<div class="toast" id="toast">已複製到剪貼簿！</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 畫面 1：歡迎頁                          -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-1" class="screen active">
+  <div class="container">
+    <div class="logo-wrap">
+      <span class="logo-icon">🛡️</span>
+      <h1 class="site-title">數位安全素養檢測站</h1>
+      <p class="site-subtitle">專為國中生設計的互動式網路安全測驗</p>
+    </div>
+
+    <p class="intro-text">
+      透過 <strong>15 道情境式題目</strong>，診斷你的數位安全素養等級，<br>
+      測驗完成後將獲得<strong>專屬稱號</strong>與<strong>個人化學習建議</strong>。<br>
+      題目涵蓋密碼安全、網路霸凌、法律責任、AI 科技等議題，<br>
+      讓你了解自己在數位世界中的自我保護能力！
+    </p>
+
+    <div class="level-cards">
+      <div class="level-card">
+        <span class="lc-icon">🛡️</span>
+        <div class="lc-title">Level 1<br>基礎防護與隱私</div>
+        <div class="lc-sub">七年級｜題 1–5</div>
+      </div>
+      <div class="level-card">
+        <span class="lc-icon">⚖️</span>
+        <div class="lc-title">Level 2<br>社交安全與法律</div>
+        <div class="lc-sub">八年級｜題 6–10</div>
+      </div>
+      <div class="level-card">
+        <span class="lc-icon">🧠</span>
+        <div class="lc-title">Level 3<br>批判思維與 AI 科技</div>
+        <div class="lc-sub">九年級｜題 11–15</div>
+      </div>
+    </div>
+
+    <div class="start-area">
+      <button class="btn btn-primary" onclick="showScreen('screen-2')" aria-label="開始測驗">
+        🚀 開始測驗
+      </button>
+      <p class="start-hint">共 15 題，預計完成時間：約 10 分鐘</p>
+      <div id="lastScore" style="margin-top:8px;color:var(--color-text-muted);font-size:.85rem;"></div>
+      <button class="btn btn-ghost" onclick="previewCertificate()" aria-label="預覽證書樣式" style="margin-top:10px;font-size:.82rem;opacity:.7;">
+        🎓 預覽證書樣式（範例下載）
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 畫面 2：基本資料                        -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-2" class="screen">
+  <div class="container">
+    <div class="card">
+      <h2>在開始之前…</h2>
+      <div class="form-group">
+        <label for="gradeSelect">你現在就讀幾年級？</label>
+        <select id="gradeSelect" aria-label="選擇年級">
+          <option value="">— 請選擇 —</option>
+          <option value="7">七年級</option>
+          <option value="8">八年級</option>
+          <option value="9">九年級</option>
+          <option value="other">其他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="netTimeSelect">你平均每天使用網路幾小時？</label>
+        <select id="netTimeSelect" aria-label="選擇每日上網時間">
+          <option value="">— 請選擇 —</option>
+          <option value="1">1 小時以下</option>
+          <option value="2">1–3 小時</option>
+          <option value="3">3–5 小時</option>
+          <option value="4">5 小時以上</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="startQuiz()" aria-label="確認，開始測驗">確認，開始測驗</button>
+        <button class="btn btn-ghost" onclick="startQuiz()" aria-label="跳過，直接開始">跳過，直接開始 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 畫面 3：測驗主畫面                      -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-3" class="screen">
+  <div class="quiz-header">
+    <div class="container">
+      <div class="header-row">
+        <div class="q-counter">第 <strong id="qCurrent">1</strong> 題 / 共 15 題</div>
+        <div class="progress-wrap">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+        <div class="q-score">答對：<strong id="qScore">0</strong> 題</div>
+      </div>
+      <div class="level-progress">
+        <div class="lp-segment lp-1" id="lp1" title="Level 1 進度"></div>
+        <div class="lp-segment lp-2" id="lp2" title="Level 2 進度"></div>
+        <div class="lp-segment lp-3" id="lp3" title="Level 3 進度"></div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div id="questionArea"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 畫面 4：結果頁                          -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-4" class="screen">
+  <div class="container">
+    <div class="result-header">
+      <div class="achievement-badge" id="achievementBadge">🏆</div>
+      <h2 class="result-title" id="resultTitle"></h2>
+      <p class="result-subtitle" id="resultSubtitle"></p>
+    </div>
+
+    <div class="score-display">
+      <span id="scoreCountEl">0</span><span> / 15 題</span>
+    </div>
+
+    <div class="score-breakdown">
+      <div class="sb-item sb-1">
+        <div class="sb-label">🛡️ 基礎防護 (L1)</div>
+        <div class="sb-val" id="sbL1">0/5</div>
+      </div>
+      <div class="sb-item sb-2">
+        <div class="sb-label">⚖️ 社交安全 (L2)</div>
+        <div class="sb-val" id="sbL2">0/5</div>
+      </div>
+      <div class="sb-item sb-3">
+        <div class="sb-label">🧠 批判思維 (L3)</div>
+        <div class="sb-val" id="sbL3">0/5</div>
+      </div>
+    </div>
+
+    <div class="radar-wrap card">
+      <canvas id="radarCanvas" width="300" height="300" aria-label="能力雷達圖"></canvas>
+    </div>
+
+    <div class="review-section" id="reviewSection"></div>
+
+    <div class="resources-section">
+      <h3 class="resources-title">🎯 根據你的測驗結果，推薦以下學習資源</h3>
+      <div class="resource-cards" id="resourceCards"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn btn-secondary" onclick="resetQuiz()" aria-label="重新測驗">🔄 重新測驗</button>
+      <button class="btn btn-primary" onclick="downloadCertificate()" aria-label="下載專屬證書">🎓 下載專屬證書</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- JavaScript                              -->
+<!-- ═══════════════════════════════════════ -->
+<script>
+/* ===================================================
+   題庫資料 QUESTIONS
+   =================================================== */
+const QUESTIONS = [
+  // ── Level 1 ──
+  {
+    id: 1, level: 1,
+    category: 'password',
+    categoryLabel: '🔐 密碼安全',
+    categoryColor: '#2196f3',
+    scenario: '你剛申請了一個新的線上遊戲帳號，系統要求你設定密碼。',
+    question: '設定帳號密碼時，下列哪種做法最安全？',
+    options: {
+      A: '使用生日加姓名，方便記憶',
+      B: '所有帳號使用同一組密碼，以防忘記',
+      C: '使用至少12個字元，混合大小寫字母、數字與符號',
+      D: '每30天強制更換密碼，即使是強密碼也一樣'
+    },
+    answer: 'C',
+    explanation: '密碼越長越複雜越安全（NIST 標準建議至少12字元）；不同帳號應使用不同密碼，以防一個被盜所有都淪陷；現代觀念已不強調定期更換強密碼。',
+    funFact: '你知道嗎？可以使用「密碼管理器」（如 Bitwarden）幫你記住所有複雜密碼，安全又方便！',
+    resource: ''
+  },
+  {
+    id: 2, level: 1,
+    category: 'footprint',
+    categoryLabel: '👣 數位足跡',
+    categoryColor: '#00acc1',
+    scenario: '小明用匿名帳號在論壇發文抱怨老師，以為不會被發現。',
+    question: '下列關於「數位足跡」的敘述，何者正確？',
+    options: {
+      A: '使用匿名帳號發文，就不會留下任何紀錄',
+      B: '刪除貼文後，相關紀錄即完全消失',
+      C: '網路上的發文、按贊與瀏覽紀錄都可能被追蹤',
+      D: '只有社群媒體才會記錄使用者的行為'
+    },
+    answer: 'C',
+    explanation: '數位足跡包含你所有的網路活動，即使你使用匿名帳號或刪除貼文，伺服器端與警方透過 IP 位址等資訊仍可能追蹤到你的真實身份。',
+    funFact: '你知道嗎？台灣警方曾多次透過 IP 位址追查到匿名網路霸凌者並依法起訴！網路不是法外之地。',
+    resource: ''
+  },
+  {
+    id: 3, level: 1,
+    category: 'copyright',
+    categoryLabel: '©️ 著作權',
+    categoryColor: '#7b1fa2',
+    scenario: '小華做學校報告需要圖片，在網路上找到一張標示「CC BY-NC」授權的精美圖片。',
+    question: '小明找到一張標示「CC BY-NC」授權的圖片，下列哪種使用方式符合授權規範？',
+    options: {
+      A: '直接使用，不需標示出處',
+      B: '標示作者姓名，用於非商業目的的學校報告',
+      C: '銷售加工後的商品',
+      D: '移除原作者姓名標示後自由使用'
+    },
+    answer: 'B',
+    explanation: 'CC BY-NC 意思是「姓名標示（BY）且限非商業使用（NC）」。使用時必須標明原作者，且不能用於營利目的，用於學校報告完全合法！',
+    funFact: '你知道嗎？創用CC（Creative Commons）是讓創作者彈性授權的系統，Flickr 與維基百科上有大量免費可用的 CC 授權圖片喔！',
+    resource: ''
+  },
+  {
+    id: 4, level: 1,
+    category: 'device',
+    categoryLabel: '🛡️ 設備安全',
+    categoryColor: '#1565c0',
+    scenario: '你在玩某款手遊，看到論壇有人分享一個「免費遊戲外掛修改器」，聲稱可以無限金幣，需要下載安裝。',
+    question: '下列哪種行為最可能導致電腦感染木馬程式（Trojan Horse）？',
+    options: {
+      A: '定期更新作業系統與防毒軟體',
+      B: '從不明來源下載並安裝免費破解遊戲外掛',
+      C: '只從官方平台（如 App Store、Play Store）下載應用程式',
+      D: '開啟作業系統的自動更新功能'
+    },
+    answer: 'B',
+    explanation: '木馬程式（Trojan Horse）會偽裝成正常軟體，一旦安裝便可竊取你的帳號密碼、個人資料，甚至控制你的裝置。從不明來源下載破解程式是最常見的感染途徑。',
+    funFact: '你知道嗎？「免費外掛」背後可能有駭客等著偷你的遊戲帳號！被盜的帳號可能被拿去詐騙你的朋友。',
+    resource: ''
+  },
+  {
+    id: 5, level: 1,
+    category: 'netiquette',
+    categoryLabel: '💬 網路禮儀',
+    categoryColor: '#00897b',
+    scenario: '你和班上同學在LINE群組討論事情，因為文字的語氣問題產生了誤解，對方似乎有些生氣。',
+    question: '與同學在群組中發生誤解時，最適當的處理方式為何？',
+    options: {
+      A: '立即在公開貼文中反駁對方，解釋自己的立場',
+      B: '私下傳訊說明，保持冷靜與尊重',
+      C: '集合其他朋友一起在群組留言支持自己',
+      D: '繼續在網路上散布對方的負面言論'
+    },
+    answer: 'B',
+    explanation: '文字訊息沒有語氣與表情，容易產生誤解。發現誤解時，應先「停、看、聽」（停下來冷靜思考，不要衝動回覆），再私下溝通解決，避免公開衝突擴大。',
+    funFact: '你知道嗎？公開在群組中指責對方，可能升級為網路霸凌事件，A、C、D 的行為都可能觸犯公然侮辱罪！',
+    resource: ''
+  },
+
+  // ── Level 2 ──
+  {
+    id: 6, level: 2,
+    category: 'cyberbullying',
+    categoryLabel: '🚫 網路霸凌',
+    categoryColor: '#9c27b0',
+    scenario: '小華在社群媒體上看到有一群人正在集體留言嘲笑同班同學小明的外貌，留言數量越來越多。',
+    question: '小華看到有人集體霸凌同學小明，下列哪個行為最正確？',
+    options: {
+      A: '按贊支持多數人的留言，反正是大家都在做的事',
+      B: '分享貼文讓更多人知道這件事',
+      C: '截圖保存證據，並向師長或家長反映',
+      D: '保持沉默，避免惹麻煩'
+    },
+    answer: 'C',
+    explanation: '網路霸凌不是旁觀者的事！按贊、分享或沉默都可能成為霸凌的幫兇（旁觀者效應）。正確做法是截圖存證，立即向師長、家長或學校輔導老師通報，協助被霸凌者。',
+    funFact: '按讚或分享霸凌內容，可能觸犯「公然侮辱罪」，被害者可以提告！最快求助可撥打 iWIN 投訴專線 02-2577-5118。',
+    resource: 'iWIN 網路內容防護機構：02-2577-5118 ｜ i.win.org.tw'
+  },
+  {
+    id: 7, level: 2,
+    category: 'privacy_image',
+    categoryLabel: '📸 私密影像保護',
+    categoryColor: '#e91e63',
+    scenario: '你在某遊戲平台認識了一個自稱「暗戀你很久」的網友，他聲稱要送你遊戲點數，但要求你先拍攝只穿內衣的照片傳給他作為「信任的證明」。',
+    question: '網友要求拍攝私密照片作為「信任的證明」，你應該怎麼做？',
+    options: {
+      A: '拍攝並傳送，因為對方說是信任的朋友',
+      B: '斷然拒絕，並立即告知家長或老師',
+      C: '先傳送，之後再要求對方刪除',
+      D: '詢問其他朋友的意見後再決定'
+    },
+    answer: 'B',
+    explanation: '這是典型的「網路誘騙」（Grooming）手法！真正關心你的人不會要求你拍攝私密照片。一旦照片傳出，你將完全失去控制權，對方可能以此進行「性勒索（Sextortion）」——要求你繼續提供照片或金錢，否則散布照片。',
+    funFact: '若不幸遭遇，請立即撥打 iWIN 0800-001-885（免費），或至警察局報案。切勿妥協，妥協只會讓勒索加重！',
+    resource: 'iWIN 免費求助：0800-001-885 ｜ 113 保護專線'
+  },
+  {
+    id: 8, level: 2,
+    category: 'scam',
+    categoryLabel: '💸 網路詐騙',
+    categoryColor: '#ff5722',
+    scenario: '你在滑Instagram時，看到廣告：「Adidas限量球鞋，原價4000元，今日特賣399元！限時5分鐘！僅接受貨到付款，更多資訊請加LINE」，圖片看起來很真實。',
+    question: '下列哪個跡象最可能代表這是詐騙網站？',
+    options: {
+      A: '提供多種付款方式（信用卡、ATM、貨到付款）且有統一發票',
+      B: '有實體公司地址、電話與完整退換貨說明',
+      C: '價格遠低於市價（僅剩1折）、只能加LINE客服、有倒數計時器',
+      D: '網站有HTTPS安全連線標誌'
+    },
+    answer: 'C',
+    explanation: '這是典型的「一頁式廣告詐騙」特徵：① 價格遠低於市價（正常折扣不超過5–7折）② 僅能透過LINE客服聯繫（沒有實體地址）③ 製造倒數計時的緊迫感 ④ 貨到付款後商品不到或收到劣質品。',
+    funFact: '遇到可疑網購可先至「165反詐騙網」查詢商家是否有詐騙紀錄，或向消費者保護熱線1950反映！',
+    resource: '165 反詐騙專線 ｜ 消費者服務專線：1950'
+  },
+  {
+    id: 9, level: 2,
+    category: 'social_engineering',
+    categoryLabel: '🎣 社交工程',
+    categoryColor: '#795548',
+    scenario: '你收到一封標題為「【緊急通知】您的Facebook帳號因違規操作即將於24小時內停權，請立即點擊連結驗證身份」的電子郵件，寄件人顯示為 security@fb-verify.com。',
+    question: '收到這封「帳號即將停權」的電子郵件，你應該怎麼做？',
+    options: {
+      A: '立即點擊連結，輸入帳號密碼完成驗證，以防帳號被停用',
+      B: '轉發給朋友，請他們幫忙確認是否合法',
+      C: '不點擊連結，直接開新分頁登入官方 Facebook 網站查看通知',
+      D: '回覆郵件詢問客服，確認是否為官方通知'
+    },
+    answer: 'C',
+    explanation: '這是「釣魚攻擊（Phishing）」！駭客利用「帳號即將停用」的恐懼感讓你急著點連結。辨識方式：① 寄件人不是官方網域（fb.com）② 官方不會用電子郵件要求你緊急輸入密碼 ③ 連結可能導向偽造網站。',
+    funFact: '正確做法：永遠直接進入官方網站（facebook.com）確認，不要點信件或簡訊中的連結。可用「VirusTotal.com」掃描可疑連結！',
+    resource: '可疑連結查詢：VirusTotal.com'
+  },
+  {
+    id: 10, level: 2,
+    category: 'legal',
+    categoryLabel: '⚖️ 法律責任',
+    categoryColor: '#607d8b',
+    scenario: '你曾在某間餐廳消費感覺不好，你在公開論壇上以真實姓名指名道姓寫道：「XX 路OOO餐廳的老闆是騙子，食材一定有問題，大家不要去！」但你並沒有任何證據。',
+    question: '在公開論壇未經查證指名道姓批評某店家，可能面臨什麼法律風險？',
+    options: {
+      A: '沒有任何問題，言論自由受法律保障',
+      B: '最多只是被店家封鎖，不會有法律責任',
+      C: '可能觸犯刑法「誹謗罪」或「公然侮辱罪」',
+      D: '因為沒有寫出完整地址，所以無法被追蹤'
+    },
+    answer: 'C',
+    explanation: '根據中華民國刑法第310條，散布不實言論損害他人名譽可能構成「誹謗罪」（最高兩年有期徒刑）。「網路匿名性」不代表免責，警方可透過 IP 追蹤發文者。批評需有事實根據，否則可能吃上官司！',
+    funFact: '合法評論方式：可說「我個人體驗感覺不佳」（主觀感受），但不能陳述未經證實的事實（如「食材有問題」）。',
+    resource: '法律諮詢：法律扶助基金會 412 免費法律諮詢'
+  },
+
+  // ── Level 3 ──
+  {
+    id: 11, level: 3,
+    category: 'deepfake',
+    categoryLabel: '🤖 AI 深度偽造',
+    categoryColor: '#ff6f00',
+    scenario: '你在班級群組看到一段影片，影片中「看起來像是」班上同學阿豪做出不雅動作，但畫面有些不自然，臉部邊緣偶爾會模糊。同學們紛紛開始轉傳。',
+    question: '看到疑似 AI 換臉（Deepfake）的不雅影片，最正確的做法是什麼？',
+    options: {
+      A: '覺得很好笑，繼續轉傳給更多朋友',
+      B: '先存下來再說，之後再決定要不要轉傳',
+      C: '不轉傳、不散布，截圖通報師長或警方，並關心當事人',
+      D: '公開在社群媒體上揭發這是假影片'
+    },
+    answer: 'C',
+    explanation: '即使知道是 Deepfake，繼續轉傳仍可能觸犯法律（散布猥褻影像罪），並對當事人造成二次傷害。正確做法：① 不轉傳 ② 向師長或警方通報 ③ 關心被害人的心理狀態，並告知他可以求助。',
+    funFact: '根據「兒童及少年性剝削防制條例」，即使是 AI 生成的未成年人不雅影像，製作、持有、散布都可能觸法！',
+    resource: '113 保護專線 ｜ iWIN：0800-001-885'
+  },
+  {
+    id: 12, level: 3,
+    category: 'ai_privacy',
+    categoryLabel: '💬 AI 隱私風險',
+    categoryColor: '#e65100',
+    scenario: '你最近很喜歡使用一個 AI 聊天機器人（類似 Grok、Character.AI），它很像朋友一樣聊天。有一天它問你：「你家住哪裡？你爸媽什麼時候上班出門？你一個人在家嗎？」',
+    question: 'AI 聊天機器人詢問你的家庭狀況與住址，你應該怎麼做？',
+    options: {
+      A: '放心告訴它，AI不是真人，不會洩露資料',
+      B: '告訴它大致區域就好，不說完整地址',
+      C: '完全不提供任何個人資訊，因為你不知道這些資料會如何被使用',
+      D: '問清楚它要這些資訊做什麼，確認理由充分後再決定'
+    },
+    answer: 'C',
+    explanation: 'AI 聊天機器人的對話記錄可能被公司儲存、用於訓練模型，甚至面臨資安漏洞被駭客取得。不管 AI 說話多像朋友，它的本質是軟體，你的個人資料（住址、家庭狀況、上學路線）絕不應透露。',
+    funFact: '你知道嗎？多個 AI 服務公司曾因資安漏洞導致用戶對話記錄外洩。保護個資，從不向任何軟體透露真實地址開始！',
+    resource: '個人資料保護法諮詢：法務部 1950'
+  },
+  {
+    id: 13, level: 3,
+    category: 'digital_ethics',
+    categoryLabel: '⚠️ 數位倫理',
+    categoryColor: '#bf360c',
+    scenario: '你看到新聞報導：一名 YouTuber 為了衝高點閱率，在網路上假扮成同齡人，誘騙未成年學生進行視訊，並要求對方做出不雅動作，再錄製下來上傳到網路。',
+    question: 'YouTuber 為了流量，誘騙未成年人拍攝不雅影片，在法律上屬於什麼行為？',
+    options: {
+      A: '雖然不道德，但只要影片當事人沒有反對就不違法',
+      B: '屬於「內容創作自由」，可受言論自由保障',
+      C: '違反「兒童及少年性剝削防制條例」，可處以重刑',
+      D: '只要不在台灣的網路平台上傳就沒有問題'
+    },
+    answer: 'C',
+    explanation: '誘騙未成年人拍攝性相關影像，無論當事人是否同意，都嚴重違反「兒童及少年性剝削防制條例」（CSEC），可處最高7年有期徒刑！追求流量沒有法律豁免權，台灣法律也對境外犯罪有管轄能力。',
+    funFact: '遇到類似情況，立即撥打 113（保護專線）或 165（反詐騙專線），也可向 iWIN 檢舉（0800-001-885）。',
+    resource: '113 保護專線 ｜ 165 反詐騙 ｜ iWIN：0800-001-885'
+  },
+  {
+    id: 14, level: 3,
+    category: 'misinformation',
+    categoryLabel: '📰 假訊息查核',
+    categoryColor: '#f57f17',
+    scenario: '你的祖父在家族 LINE 群組傳了一則影片：「最新研究！每天吃生薑泡蜂蜜水可以完全治療第二型糖尿病！已有上千人見證，醫院不告訴你的秘密！」群組裡大家都在分享。',
+    question: '收到「偏方可以治療糖尿病」的影片，最正確的做法是什麼？',
+    options: {
+      A: '這麼多人分享，應該是真的，繼續轉傳',
+      B: '雖然不確定，但分享給更多人，讓大家自己判斷',
+      C: '使用事實查核工具（如 Cofacts、MyGoPen）查證後，再決定是否轉傳',
+      D: '詢問傳訊息的長輩，確認資訊來源後再轉傳'
+    },
+    answer: 'C',
+    explanation: '健康類假訊息是最危險的謠言！可能讓患者放棄正規醫療，導致病情惡化甚至死亡。「分享人數多」不代表真實。使用台灣在地事實查核工具可快速查證：① Cofacts（cofacts.gov.tw）② MyGoPen（mygopen.com）③ 台灣事實查核中心（tfc-taiwan.org.tw）',
+    funFact: '你知道嗎？散布不實醫療資訊可能觸犯「醫療法」及「食品安全衛生管理法」！查清楚才分享，保護自己也保護家人。',
+    resource: 'Cofacts：cofacts.gov.tw ｜ MyGoPen：mygopen.com'
+  },
+  {
+    id: 15, level: 3,
+    category: 'algorithm',
+    categoryLabel: '🔮 演算法素養',
+    categoryColor: '#4a148c',
+    scenario: '小明最近迷上了一些「政府在控制你的思想」相關的 YouTube 影片，他發現不管他點哪部影片，YouTube 都持續推薦給他更多類似的、更極端的影片，讓他覺得這些說法一定是真的。',
+    question: '發現自己的推薦影片全都是同類型的極端觀點，這個現象在網路文化中稱為什麼？',
+    options: {
+      A: '搜尋引擎優化（SEO），是正常現象',
+      B: '過濾氣泡（Filter Bubble），演算法只推送符合你偏好的內容，使你的視野越來越窄',
+      C: '網路中立性（Net Neutrality），保障每個人看到相同的內容',
+      D: '演算法偏見（Algorithm Bias），是因為有人故意控制你看的內容'
+    },
+    answer: 'B',
+    explanation: '「過濾氣泡（Filter Bubble）」是指演算法為了提高你的使用時間，不斷推送你已經喜歡的內容，讓你以為自己的觀點就是「主流」，忽略了其他不同的聲音。長期下來可能導致思想偏狹，甚至被極端內容洗腦。',
+    funFact: '破解過濾氣泡的方法：① 主動搜尋不同立場的新聞 ② 定期清除瀏覽紀錄與 Cookie ③ 使用不追蹤的瀏覽器（如 DuckDuckGo）④ 多與真實世界的人交流。',
+    resource: '台灣事實查核中心：tfc-taiwan.org.tw'
+  }
+];
+
+/* ===================================================
+   學習資源清單
+   =================================================== */
+const RESOURCES = [
+  { icon: '📚', name: '中小學網路素養與認知網', desc: '教育部官方數位素養教材', url: 'https://ischool.moe.edu.tw' },
+  { icon: '🔐', name: '全民資安素養網（ISA）',  desc: '資安院免費課程與測驗',   url: 'https://isafe.org.tw' },
+  { icon: '🛡️', name: 'iWIN 網路內容防護機構', desc: '網路霸凌、私密影像求助', url: 'https://i.win.org.tw' },
+  { icon: '📞', name: '165 反詐騙網',           desc: '查詢詐騙帳號、案例回報',  url: 'https://165.npa.gov.tw' },
+  { icon: '🔍', name: 'Cofacts 真的假的',       desc: 'LINE 假訊息事實查核機器人', url: 'https://cofacts.tw' },
+  { icon: '✅', name: 'MyGoPen',                desc: '即時假訊息查證平台',       url: 'https://www.mygopen.com' },
+  { icon: '📰', name: '台灣事實查核中心',        desc: '深度假訊息調查報告',       url: 'https://tfc-taiwan.org.tw' }
+];
+
+/* ===================================================
+   全域狀態
+   =================================================== */
+const quizState = {
+  currentQuestion: 0,
+  answers: [],
+  score: 0,
+  level1Score: 0,
+  level2Score: 0,
+  level3Score: 0,
+  userData: { grade: '', netTime: '' }
+};
+
+/* ===================================================
+   畫面切換
+   =================================================== */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  requestAnimationFrame(() => el.classList.add('active'));
+}
+
+/* ===================================================
+   開始測驗
+   =================================================== */
+function startQuiz() {
+  quizState.userData.grade   = document.getElementById('gradeSelect').value;
+  quizState.userData.netTime = document.getElementById('netTimeSelect').value;
+  quizState.currentQuestion  = 0;
+  quizState.answers          = [];
+  quizState.score            = 0;
+  quizState.level1Score      = 0;
+  quizState.level2Score      = 0;
+  quizState.level3Score      = 0;
+  showScreen('screen-3');
+  renderQuestion(0);
+}
+
+/* ===================================================
+   渲染題目
+   =================================================== */
+function renderQuestion(index) {
+  const q = QUESTIONS[index];
+  const area = document.getElementById('questionArea');
+
+  // 更新 header
+  document.getElementById('qCurrent').textContent = index + 1;
+  document.getElementById('qScore').textContent   = quizState.score;
+
+  const pct = (index / 15) * 100;
+  const pfill = document.getElementById('progressFill');
+  pfill.style.width = pct + '%';
+  pfill.parentElement.setAttribute('aria-valuenow', Math.round(pct));
+
+  // 三色進度條
+  const l1Pct = Math.min(100, Math.max(0, (Math.min(index, 5) / 5) * 100));
+  const l2Pct = index >= 5 ? Math.min(100, ((Math.min(index, 10) - 5) / 5) * 100) : 0;
+  const l3Pct = index >= 10 ? Math.min(100, ((Math.min(index, 15) - 10) / 5) * 100) : 0;
+  document.getElementById('lp1').style.setProperty('--lp', l1Pct + '%');
+  document.getElementById('lp2').style.setProperty('--lp', l2Pct + '%');
+  document.getElementById('lp3').style.setProperty('--lp', l3Pct + '%');
+  document.getElementById('lp1').querySelector
+    ? null : null;
+  // 直接設 after width via inline style hack
+  setLevelProgress('lp1', l1Pct);
+  setLevelProgress('lp2', l2Pct);
+  setLevelProgress('lp3', l3Pct);
+
+  // 構建題目 HTML
+  const optionsHTML = ['A','B','C','D'].map(letter => `
+    <button class="option-btn" onclick="selectAnswer('${letter}')"
+      data-option="${letter}" aria-label="選項${letter}：${escapeHtml(q.options[letter])}">
+      <span class="option-letter">${letter}</span>
+      <span>${escapeHtml(q.options[letter])}</span>
+    </button>`).join('');
+
+  area.innerHTML = `
+    <div class="question-card card" id="qCard">
+      <span class="category-badge" style="color:${q.categoryColor};border-color:${q.categoryColor};background:${q.categoryColor}22">
+        ${q.categoryLabel}
+      </span>
+      <div class="scenario-box">${escapeHtml(q.scenario)}</div>
+      <div class="question-text">${index + 1}. ${escapeHtml(q.question)}</div>
+      <div class="options-grid" id="optionsGrid">${optionsHTML}</div>
+      <div class="explanation-card" id="expCard"></div>
+      <div class="next-btn-wrap" id="nextWrap" style="display:none">
+        <button class="btn btn-primary" onclick="nextQuestion()" aria-label="${index < 14 ? '下一題' : '查看結果'}">
+          ${index < 14 ? '下一題 →' : '查看結果 🏆'}
+        </button>
+      </div>
+    </div>`;
+
+  // 鍵盤導航
+  setupKeyboard();
+}
+
+function setLevelProgress(id, pct) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  // 用 CSS variable 控制 ::after width
+  el.style.cssText += `--lp-w:${pct}%`;
+  // 直接修改 ::after 不可行，改用子元素
+  el.innerHTML = `<span style="display:block;height:100%;width:${pct}%;border-radius:99px;background:inherit;transition:width .4s ease"></span>`;
+  if (id === 'lp1') el.querySelector('span').style.background = 'var(--color-level1)';
+  if (id === 'lp2') el.querySelector('span').style.background = 'var(--color-level2)';
+  if (id === 'lp3') el.querySelector('span').style.background = 'var(--color-level3)';
+}
+
+/* ===================================================
+   選擇答案
+   =================================================== */
+function selectAnswer(selected) {
+  const q = QUESTIONS[quizState.currentQuestion];
+  const correct = q.answer;
+  const isCorrect = selected === correct;
+
+  // 鎖定所有按鈕
+  document.querySelectorAll('.option-btn').forEach(btn => {
+    btn.disabled = true;
+    const opt = btn.getAttribute('data-option');
+    if (opt === correct) btn.classList.add('correct');
+    if (opt === selected && !isCorrect) btn.classList.add('wrong');
+  });
+
+  // 更新狀態
+  quizState.answers[quizState.currentQuestion] = selected;
+  if (isCorrect) {
+    quizState.score++;
+    if (q.level === 1) quizState.level1Score++;
+    else if (q.level === 2) quizState.level2Score++;
+    else quizState.level3Score++;
+    document.getElementById('qScore').textContent = quizState.score;
+    launchConfetti();
+  }
+
+  // 顯示解析卡
+  showExplanation(q, isCorrect, selected);
+  document.getElementById('nextWrap').style.display = 'block';
+}
+
+function showExplanation(q, isCorrect, selected) {
+  const card = document.getElementById('expCard');
+  card.classList.add('show', isCorrect ? 'correct-card' : 'wrong-card');
+  const title = isCorrect
+    ? '<span>✅</span> 答對了！'
+    : `<span>❌</span> 再加油！正確答案是 <b>${q.answer}</b>`;
+
+  const resourceHTML = (q.level >= 2 && !isCorrect && q.resource)
+    ? `<div class="exp-section"><span class="exp-label">📞 求助資源：</span><span class="exp-resource">${escapeHtml(q.resource)}</span></div>` : '';
+
+  card.innerHTML = `
+    <div class="exp-correct exp-wrong">
+      <div class="exp-title">${title}</div>
+      <div class="exp-section"><span class="exp-label">【觀念解說】</span>${escapeHtml(q.explanation)}</div>
+      <div class="exp-section"><span class="exp-label">【你知道嗎？】</span>${escapeHtml(q.funFact)}</div>
+      ${resourceHTML}
+    </div>`;
+}
+
+/* ===================================================
+   下一題
+   =================================================== */
+function nextQuestion() {
+  const card = document.getElementById('qCard');
+  card.classList.add('leaving');
+  setTimeout(() => {
+    quizState.currentQuestion++;
+    if (quizState.currentQuestion >= QUESTIONS.length) {
+      showResult();
+    } else {
+      renderQuestion(quizState.currentQuestion);
+    }
+  }, 280);
+}
+
+/* ===================================================
+   結果頁
+   =================================================== */
+function showResult() {
+  showScreen('screen-4');
+
+  const s = quizState.score;
+  const l1 = quizState.level1Score;
+  const l2 = quizState.level2Score;
+  const l3 = quizState.level3Score;
+
+  // 稱號
+  let badge, title, subtitle, titleClass;
+  if (s <= 7) {
+    badge = '🔰'; title = 'Level 1 數位新手'; titleClass = 'level1';
+    subtitle = '你已踏上數位安全的起點！多多練習，保護自己從現在開始！';
+  } else if (s <= 11) {
+    badge = '🛡️'; title = 'Level 2 網路防護員'; titleClass = 'level2';
+    subtitle = '你具備不錯的防護意識！繼續加強判斷力！';
+  } else {
+    badge = '🏆'; title = 'Level 3 數位公民大使'; titleClass = 'level3';
+    subtitle = '恭喜！你擁有優秀的數位安全素養！';
+  }
+
+  document.getElementById('achievementBadge').textContent = badge;
+  const titleEl = document.getElementById('resultTitle');
+  titleEl.textContent = title;
+  titleEl.className = 'result-title ' + titleClass;
+  document.getElementById('resultSubtitle').textContent = subtitle;
+  document.getElementById('sbL1').textContent = l1 + '/5';
+  document.getElementById('sbL2').textContent = l2 + '/5';
+  document.getElementById('sbL3').textContent = l3 + '/5';
+
+  animateCount(document.getElementById('scoreCountEl'), s, 1200);
+
+  // 儲存到 localStorage
+  try {
+    localStorage.setItem('digitalQuizLastScore', JSON.stringify({ score: s, l1, l2, l3, date: new Date().toLocaleDateString() }));
+  } catch(e) {}
+
+  // 雷達圖
+  const canvas = document.getElementById('radarCanvas');
+  setTimeout(() => drawRadarChart(canvas, l1 / 5, l2 / 5, l3 / 5), 400);
+
+  // 錯題回顧
+  renderReview();
+
+  // 學習資源
+  renderResources();
+}
+
+/* ===================================================
+   雷達圖（純 Canvas）
+   =================================================== */
+function drawRadarChart(canvas, r1, r2, r3) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
+  const maxR = Math.min(W, H) * 0.38;
+  const labels = ['🛡️ 基礎防護', '⚖️ 社交安全', '🧠 批判思維'];
+  const colors  = ['#2196f3', '#9c27b0', '#ff6f00'];
+  const targets = [r1, r2, r3];
+  const angles  = [-Math.PI / 2, -Math.PI / 2 + (2 * Math.PI / 3), -Math.PI / 2 + (4 * Math.PI / 3)];
+
+  let progress = 0;
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    progress = Math.min(progress + 0.04, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+
+    // 背景網格 (3層)
+    for (let ring = 1; ring <= 3; ring++) {
+      const r = maxR * (ring / 3);
+      ctx.beginPath();
+      angles.forEach((a, i) => {
+        const x = cx + r * Math.cos(a);
+        const y = cy + r * Math.sin(a);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.strokeStyle = 'rgba(255,255,255,.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // 軸線
+    angles.forEach(a => {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + maxR * Math.cos(a), cy + maxR * Math.sin(a));
+      ctx.strokeStyle = 'rgba(255,255,255,.18)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    // 資料多邊形
+    const pts = targets.map((v, i) => ({
+      x: cx + maxR * v * eased * Math.cos(angles[i]),
+      y: cy + maxR * v * eased * Math.sin(angles[i])
+    }));
+
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(0,229,255,.18)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,229,255,.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 節點
+    pts.forEach((p, i) => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = colors[i];
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+
+    // 標籤
+    ctx.font = 'bold 13px Noto Sans TC, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    angles.forEach((a, i) => {
+      const lx = cx + (maxR + 28) * Math.cos(a);
+      const ly = cy + (maxR + 28) * Math.sin(a);
+      ctx.fillStyle = colors[i];
+      ctx.fillText(labels[i], lx, ly);
+      ctx.fillStyle = 'rgba(255,255,255,.7)';
+      ctx.font = '11px Noto Sans TC, sans-serif';
+      ctx.fillText(Math.round(targets[i] * 100) + '%', lx, ly + 16);
+      ctx.font = 'bold 13px Noto Sans TC, sans-serif';
+    });
+
+    if (progress < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ===================================================
+   數字計數動畫
+   =================================================== */
+function animateCount(el, target, duration) {
+  let start = 0;
+  const step = duration / target;
+  const timer = setInterval(() => {
+    start++;
+    el.textContent = start;
+    if (start >= target) clearInterval(timer);
+  }, Math.max(30, step));
+}
+
+/* ===================================================
+   錯題回顧
+   =================================================== */
+function renderReview() {
+  const wrongItems = quizState.answers
+    .map((ans, i) => ({ ans, q: QUESTIONS[i] }))
+    .filter(({ ans, q }) => ans !== q.answer);
+
+  const section = document.getElementById('reviewSection');
+  if (wrongItems.length === 0) {
+    section.innerHTML = '<div class="card" style="text-align:center;color:var(--color-success);font-weight:700;">🎉 全部答對！太厲害了！</div>';
+    return;
+  }
+
+  section.innerHTML = `<h3 class="review-title">📝 這些題目需要再複習（${wrongItems.length} 題）</h3>` +
+    wrongItems.map(({ ans, q }, idx) => `
+      <div class="review-item" id="ri-${idx}">
+        <div class="review-header" onclick="toggleReview('ri-${idx}')" aria-expanded="false" role="button" tabindex="0">
+          <span class="review-cat">${q.categoryLabel}</span>
+          <span class="review-q">${q.question.slice(0, 28)}…</span>
+          <span class="review-toggle">▼</span>
+        </div>
+        <div class="review-body">
+          <div style="margin-bottom:8px;font-size:.9rem;font-weight:700">${escapeHtml(q.question)}</div>
+          <div class="review-answers">
+            <span class="ra-wrong">✗ 你的答案：${ans}. ${escapeHtml(q.options[ans] || '未作答')}</span>
+            <span class="ra-correct">✓ 正確答案：${q.answer}. ${escapeHtml(q.options[q.answer])}</span>
+          </div>
+          <div style="font-size:.84rem;color:var(--color-text-muted);line-height:1.7">
+            <b style="color:var(--color-primary)">【觀念解說】</b>${escapeHtml(q.explanation)}
+          </div>
+        </div>
+      </div>`).join('');
+}
+
+function toggleReview(id) {
+  const item = document.getElementById(id);
+  item.classList.toggle('open');
+  const header = item.querySelector('.review-header');
+  header.setAttribute('aria-expanded', item.classList.contains('open'));
+}
+
+/* ===================================================
+   學習資源
+   =================================================== */
+function renderResources() {
+  document.getElementById('resourceCards').innerHTML = RESOURCES.map(r => `
+    <div class="resource-card">
+      <span class="rc-icon">${r.icon}</span>
+      <span class="rc-name">${escapeHtml(r.name)}</span>
+      <span class="rc-desc">${escapeHtml(r.desc)}</span>
+      <a class="rc-link" href="${r.url}" target="_blank" rel="noopener noreferrer" aria-label="前往 ${r.name}">前往 →</a>
+    </div>`).join('');
+}
+
+/* ===================================================
+   下載證書（純 Canvas，不需 AI）
+   =================================================== */
+/* 開啟姓名 Modal */
+function downloadCertificate() {
+  document.getElementById('nameInput').value = '';
+  document.getElementById('nameModal').classList.add('show');
+  setTimeout(() => document.getElementById('nameInput').focus(), 100);
+}
+
+function closeNameModal() {
+  document.getElementById('nameModal').classList.remove('show');
+}
+
+function generateCertificatePNG(userName) {
+  const s  = quizState.score;
+  const l1 = quizState.level1Score;
+  const l2 = quizState.level2Score;
+  const l3 = quizState.level3Score;
+
+  let badge, titleText, subtitle, accentColor;
+  if (s <= 7) {
+    badge = '🔰'; titleText = 'Level 1 數位新手';
+    subtitle = '你已踏上數位安全的起點！';
+    accentColor = '#2196f3';
+  } else if (s <= 11) {
+    badge = '🛡️'; titleText = 'Level 2 網路防護員';
+    subtitle = '你具備不錯的防護意識！繼續加強判斷力！';
+    accentColor = '#9c27b0';
+  } else {
+    badge = '🏆'; titleText = 'Level 3 數位公民大使';
+    subtitle = '恭喜！你擁有優秀的數位安全素養！';
+    accentColor = '#ffd700';
+  }
+
+  const W = 900, H = 620;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+
+  // ── 背景漸層 ──
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#0d0d2e');
+  bg.addColorStop(1, '#1a1a3e');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── 科技格線 ──
+  ctx.strokeStyle = 'rgba(0,229,255,0.06)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 36) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 36) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // ── 外框（雙層） ──
+  ctx.strokeStyle = accentColor;
+  ctx.lineWidth = 4;
+  roundRect(ctx, 18, 18, W-36, H-36, 20);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,229,255,0.3)';
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, 28, 28, W-56, H-56, 14);
+  ctx.stroke();
+
+  // ── 四角裝飾 ──
+  const corners = [[40,40],[W-40,40],[40,H-40],[W-40,H-40]];
+  corners.forEach(([cx2,cy2]) => {
+    ctx.beginPath();
+    ctx.arc(cx2, cy2, 8, 0, Math.PI*2);
+    ctx.fillStyle = accentColor;
+    ctx.fill();
+  });
+
+  // ── 頂部標題列 ──
+  ctx.fillStyle = 'rgba(0,229,255,0.08)';
+  ctx.fillRect(36, 36, W-72, 64);
+
+  ctx.font = 'bold 18px Microsoft JhengHei, sans-serif';
+  ctx.fillStyle = '#00e5ff';
+  ctx.textAlign = 'center';
+  ctx.fillText('數位安全素養檢測站', W/2, 75);
+
+  // ── 副標題線條 ──
+  const grad = ctx.createLinearGradient(80, 0, W-80, 0);
+  grad.addColorStop(0, 'transparent');
+  grad.addColorStop(0.5, accentColor);
+  grad.addColorStop(1, 'transparent');
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(80, 108); ctx.lineTo(W-80, 108); ctx.stroke();
+
+  // ── 認證文字 ──
+  ctx.font = '15px Microsoft JhengHei, sans-serif';
+  ctx.fillStyle = 'rgba(224,224,224,0.7)';
+  ctx.fillText('本證書茲證明以下測驗者已完成「國中生數位安全素養測驗」', W/2, 138);
+
+  // ── 姓名區塊 ──
+  ctx.font = 'bold 32px Microsoft JhengHei, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(userName, W/2, 182);
+  // 姓名底線裝飾
+  const nameW = ctx.measureText(userName).width;
+  ctx.strokeStyle = accentColor;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(W/2 - nameW/2, 190);
+  ctx.lineTo(W/2 + nameW/2, 190);
+  ctx.stroke();
+
+  // ── 徽章 Emoji ──
+  ctx.font = '62px serif';
+  ctx.fillText(badge, W/2, 258);
+
+  // ── 稱號 ──
+  ctx.font = 'bold 34px Microsoft JhengHei, sans-serif';
+  const titleGrad = ctx.createLinearGradient(W/2-200, 0, W/2+200, 0);
+  titleGrad.addColorStop(0, accentColor);
+  titleGrad.addColorStop(1, '#ffffff');
+  ctx.fillStyle = titleGrad;
+  ctx.fillText(titleText, W/2, 305);
+
+  // ── 副說明 ──
+  ctx.font = '15px Microsoft JhengHei, sans-serif';
+  ctx.fillStyle = 'rgba(224,224,224,0.75)';
+  ctx.fillText(subtitle, W/2, 332);
+
+  // ── 分數大字 ──
+  ctx.font = 'bold 56px Microsoft JhengHei, sans-serif';
+  ctx.fillStyle = accentColor;
+  ctx.fillText(`${s} / 15`, W/2, 400);
+  ctx.font = '16px Microsoft JhengHei, sans-serif';
+  ctx.fillStyle = 'rgba(224,224,224,0.55)';
+  ctx.fillText('總得分', W/2, 425);
+
+  // ── 三項分數條 ──
+  const bars = [
+    { label: '🛡️ 基礎防護 (L1)', val: l1, color: '#2196f3', x: 120 },
+    { label: '⚖️ 社交安全 (L2)', val: l2, color: '#9c27b0', x: W/2 - 90 },
+    { label: '🧠 批判思維 (L3)', val: l3, color: '#ff6f00', x: W - 330 }
+  ];
+  bars.forEach(b => {
+    // 標籤
+    ctx.font = '13px Microsoft JhengHei, sans-serif';
+    ctx.fillStyle = b.color;
+    ctx.textAlign = 'left';
+    ctx.fillText(b.label, b.x, 460);
+    // 底框
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    roundRect(ctx, b.x, 468, 180, 12, 6);
+    ctx.fill();
+    // 填充
+    ctx.fillStyle = b.color;
+    roundRect(ctx, b.x, 468, 180 * (b.val / 5), 12, 6);
+    ctx.fill();
+    // 數字
+    ctx.font = 'bold 14px Microsoft JhengHei, sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${b.val}/5`, b.x + 188, 480);
+  });
+  ctx.textAlign = 'center';
+
+  // ── 底部日期 & 單位 ──
+  ctx.strokeStyle = 'rgba(0,229,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(80, 520); ctx.lineTo(W-80, 520); ctx.stroke();
+
+  const today = new Date().toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric' });
+  ctx.font = '14px Microsoft JhengHei, sans-serif';
+  ctx.fillStyle = 'rgba(224,224,224,0.5)';
+  ctx.fillText(`測驗日期：${today}`, W/2 - 160, 548);
+  ctx.fillText('靜宜大學 AI 應用碩班 計算機網路課程', W/2 + 120, 548);
+
+  // ── 下載 ──
+  const link = document.createElement('a');
+  link.download = `數位安全素養證書_${titleText}.png`;
+  link.href = cv.toDataURL('image/png');
+  link.click();
+  showToast('🎓 證書已下載！');
+}
+
+// Canvas 圓角矩形輔助
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ===================================================
+   重置測驗
+   =================================================== */
+function previewCertificate() {
+  // 暫存並填入滿分範例，讓 Modal 確認姓名後還原
+  const backup = { score: quizState.score, level1Score: quizState.level1Score, level2Score: quizState.level2Score, level3Score: quizState.level3Score };
+  quizState.score = 15; quizState.level1Score = 5; quizState.level2Score = 5; quizState.level3Score = 5;
+
+  document.getElementById('nameInput').value = '';
+  document.getElementById('nameModal').classList.add('show');
+  setTimeout(() => document.getElementById('nameInput').focus(), 100);
+
+  // 覆寫 confirmCertificate 還原狀態（只在預覽時用）
+  const original = window._certConfirmOnce;
+  window._certConfirmOnce = function() {
+    const name = document.getElementById('nameInput').value.trim() || '匿名勇者';
+    closeNameModal();
+    generateCertificatePNG(name);
+    Object.assign(quizState, backup);
+    window._certConfirmOnce = null;
+  };
+}
+
+function confirmCertificate() {
+  if (window._certConfirmOnce) { window._certConfirmOnce(); return; }
+  const name = document.getElementById('nameInput').value.trim() || '匿名勇者';
+  closeNameModal();
+  generateCertificatePNG(name);
+}
+
+function resetQuiz() {
+  showScreen('screen-1');
+  document.getElementById('gradeSelect').value   = '';
+  document.getElementById('netTimeSelect').value = '';
+}
+
+/* ===================================================
+   彩帶效果
+   =================================================== */
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = ['#00e5ff','#7c4dff','#ff6f00','#00c853','#ffd700'];
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `
+      left:${20 + Math.random() * 60}%;
+      background:${colors[Math.floor(Math.random() * colors.length)]};
+      animation-delay:${Math.random() * .3}s;
+      animation-duration:${.8 + Math.random() * .6}s;
+      transform:rotate(${Math.random() * 360}deg);
+      width:${6 + Math.random() * 8}px;height:${6 + Math.random() * 8}px;
+    `;
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 1500);
+  }
+}
+
+/* ===================================================
+   鍵盤導航支援
+   =================================================== */
+function setupKeyboard() {
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((btn, idx) => {
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (!btn.disabled) btn.click();
+      }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') btns[Math.min(idx + 1, btns.length - 1)].focus();
+      if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  btns[Math.max(idx - 1, 0)].focus();
+    });
+  });
+}
+
+/* ===================================================
+   工具函式
+   =================================================== */
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ===================================================
+   頁面初始化
+   =================================================== */
+(function init() {
+  // 顯示上次成績
+  try {
+    const last = JSON.parse(localStorage.getItem('digitalQuizLastScore'));
+    if (last) {
+      document.getElementById('lastScore').textContent =
+        `上次成績（${last.date}）：${last.score}/15 題`;
+    }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
