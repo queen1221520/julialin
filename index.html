@@ -546,6 +546,49 @@
     #radarCanvas   { max-width: 250px; max-height: 250px; }
   }
 
+  /* ===== 管理員後台 ===== */
+  #screen-5 { padding-bottom: 60px; }
+  .admin-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0 16px; border-bottom: 1px solid rgba(0,229,255,.15);
+    margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+  }
+  .admin-title { font-size: 1.3rem; font-weight: 900; color: var(--color-primary); }
+  .admin-stats {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .stat-card {
+    flex: 1; min-width: 120px;
+    background: var(--color-surface); border: 1px solid rgba(0,229,255,.15);
+    border-radius: 10px; padding: 14px; text-align: center;
+  }
+  .stat-num  { font-size: 1.8rem; font-weight: 900; color: var(--color-primary); }
+  .stat-label{ font-size: .78rem; color: var(--color-text-muted); margin-top: 2px; }
+  .admin-table-wrap { overflow-x: auto; border-radius: var(--radius); }
+  .admin-table {
+    width: 100%; border-collapse: collapse; font-size: .82rem;
+    background: var(--color-surface);
+  }
+  .admin-table th {
+    background: rgba(0,229,255,.12); color: var(--color-primary);
+    padding: 10px 12px; text-align: left; white-space: nowrap;
+    font-weight: 700; border-bottom: 1px solid rgba(0,229,255,.2);
+  }
+  .admin-table td {
+    padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,.06);
+    color: var(--color-text); white-space: nowrap;
+  }
+  .admin-table tr:hover td { background: rgba(0,229,255,.04); }
+  .level-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 99px;
+    font-size: .75rem; font-weight: 700;
+  }
+  .level-tag.l1 { background: rgba(33,150,243,.2); color: #2196f3; }
+  .level-tag.l2 { background: rgba(156,39,176,.2); color: #ce93d8; }
+  .level-tag.l3 { background: rgba(255,111,0,.2);  color: #ff9800; }
+  .admin-empty { text-align: center; padding: 40px; color: var(--color-text-muted); font-size:.9rem; }
+  .admin-loading { text-align: center; padding: 40px; color: var(--color-text-muted); }
+
   /* ===== 彩帶粒子 ===== */
   .confetti-container {
     position: fixed; top: 0; left: 0; width: 100%; height: 0;
@@ -628,6 +671,11 @@
       <button class="btn btn-ghost" onclick="previewCertificate()" aria-label="預覽證書樣式" style="margin-top:10px;font-size:.82rem;opacity:.7;">
         🎓 預覽證書樣式（範例下載）
       </button>
+      <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button class="btn btn-ghost" onclick="openAdminModal()" aria-label="管理員登入" style="font-size:.75rem;opacity:.4;">
+          🔐 管理員
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -738,6 +786,48 @@
     <div class="result-actions">
       <button class="btn btn-secondary" onclick="resetQuiz()" aria-label="重新測驗">🔄 重新測驗</button>
       <button class="btn btn-primary" onclick="downloadCertificate()" aria-label="下載專屬證書">🎓 下載專屬證書</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- 畫面 5：管理員後台                      -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-5" class="screen">
+  <div class="container">
+    <div class="admin-header">
+      <div class="admin-title">📊 成績管理後台</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="refreshAdminData()" aria-label="重新整理">🔄 重新整理</button>
+        <button class="btn btn-secondary" onclick="exportCSV()" aria-label="匯出 CSV">📥 匯出 CSV</button>
+        <button class="btn btn-ghost" onclick="showScreen('screen-1')" aria-label="返回首頁">← 返回首頁</button>
+      </div>
+    </div>
+    <div class="admin-stats" id="adminStats">
+      <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">總作答人數</div></div>
+      <div class="stat-card"><div class="stat-num" id="statAvg">—</div><div class="stat-label">平均答對題數</div></div>
+      <div class="stat-card"><div class="stat-num" id="statL3">—</div><div class="stat-label">達到 Level 3</div></div>
+      <div class="stat-card"><div class="stat-num" id="statL1">—</div><div class="stat-label">Level 1（待加強）</div></div>
+    </div>
+    <div class="admin-table-wrap card" style="padding:0">
+      <div id="adminTableArea"><div class="admin-loading">載入中…</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 管理員登入 Modal -->
+<div class="modal-overlay" id="adminModal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-icon">🔐</div>
+    <div class="modal-title">管理員登入</div>
+    <div class="modal-sub">請輸入管理員密碼</div>
+    <input class="modal-input" id="adminPasswordInput" type="password"
+      placeholder="輸入密碼"
+      onkeydown="if(event.key==='Enter') submitAdminLogin()">
+    <div id="adminLoginError" style="color:#d50000;font-size:.82rem;margin-bottom:10px;display:none">密碼錯誤，請再試一次</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeAdminModal()" aria-label="取消">取消</button>
+      <button class="btn btn-primary" onclick="submitAdminLogin()" aria-label="登入">登入 →</button>
     </div>
   </div>
 </div>
@@ -1429,6 +1519,49 @@ function renderResources() {
 }
 
 /* ===================================================
+   Google Sheets 後台提交
+   將此處換成你的 Apps Script 網址
+   =================================================== */
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPIrD5eMnDdSC67H1l_8b4JpSAqTkaKwDD2QBCDxElArwFvRlNP52JVp9kqHfoCFMm/exec';
+
+function submitToSheets(name) {
+  if (!GOOGLE_SCRIPT_URL) return; // 尚未設定則跳過
+
+  const gradeMap  = { '7':'七年級','8':'八年級','9':'九年級','other':'其他','':'未填寫' };
+  const netMap    = { '1':'1小時以下','2':'1–3小時','3':'3–5小時','4':'5小時以上','':'未填寫' };
+
+  const wrongNums = quizState.answers
+    .map((ans, i) => ans !== QUESTIONS[i].answer ? (i + 1) : null)
+    .filter(n => n !== null)
+    .join('、') || '無';
+
+  let level;
+  if (quizState.score <= 7)       level = 'Level 1 數位新手';
+  else if (quizState.score <= 11) level = 'Level 2 網路防護員';
+  else                             level = 'Level 3 數位公民大使';
+
+  const payload = {
+    timestamp:     new Date().toLocaleString('zh-TW'),
+    name:          name,
+    grade:         gradeMap[quizState.userData.grade] || '未填寫',
+    netTime:       netMap[quizState.userData.netTime] || '未填寫',
+    score:         quizState.score,
+    l1Score:       quizState.level1Score,
+    l2Score:       quizState.level2Score,
+    l3Score:       quizState.level3Score,
+    level:         level,
+    wrongQuestions: wrongNums
+  };
+
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(() => {}); // 靜默失敗，不影響主流程
+}
+
+/* ===================================================
    下載證書（純 Canvas，不需 AI）
    =================================================== */
 /* 開啟姓名 Modal */
@@ -1597,8 +1730,7 @@ function generateCertificatePNG(userName) {
   const today = new Date().toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric' });
   ctx.font = '14px Microsoft JhengHei, sans-serif';
   ctx.fillStyle = 'rgba(224,224,224,0.5)';
-  ctx.fillText(`測驗日期：${today}`, W/2 - 160, 548);
-  ctx.fillText('靜宜大學 AI 應用碩班 計算機網路課程', W/2 + 120, 548);
+  ctx.fillText(`測驗日期：${today}`, W/2, 548);
 
   // ── 下載 ──
   const link = document.createElement('a');
@@ -1657,7 +1789,140 @@ function confirmCertificate() {
   if (window._certConfirmOnce) { window._certConfirmOnce(); return; }
   const name = document.getElementById('nameInput').value.trim() || '匿名勇者';
   closeNameModal();
+  submitToSheets(name);
   generateCertificatePNG(name);
+}
+
+/* ===================================================
+   管理員後台
+   =================================================== */
+const ADMIN_EMAIL = 'queen1221520@gmail.com';
+// 管理員密碼：請在 Apps Script 中設定相同密碼
+// 此處密碼僅用於前端初步驗證，實際資料由 Apps Script 二次驗證
+const ADMIN_PASSWORD = 'admin2026'; // ← 可自行修改
+
+let adminData = [];
+
+function openAdminModal() {
+  document.getElementById('adminPasswordInput').value = '';
+  document.getElementById('adminLoginError').style.display = 'none';
+  document.getElementById('adminModal').classList.add('show');
+  setTimeout(() => document.getElementById('adminPasswordInput').focus(), 100);
+}
+
+function closeAdminModal() {
+  document.getElementById('adminModal').classList.remove('show');
+}
+
+function submitAdminLogin() {
+  const pw = document.getElementById('adminPasswordInput').value;
+  if (pw === ADMIN_PASSWORD) {
+    closeAdminModal();
+    showScreen('screen-5');
+    loadAdminData();
+  } else {
+    document.getElementById('adminLoginError').style.display = 'block';
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('adminPasswordInput').focus();
+  }
+}
+
+function loadAdminData() {
+  const area = document.getElementById('adminTableArea');
+  area.innerHTML = '<div class="admin-loading">⏳ 資料載入中，請稍候…</div>';
+
+  if (!GOOGLE_SCRIPT_URL) {
+    area.innerHTML = '<div class="admin-empty">⚠️ 尚未設定 Google Sheets 網址，請先完成後台設定。</div>';
+    return;
+  }
+
+  fetch(`${GOOGLE_SCRIPT_URL}?password=${encodeURIComponent(ADMIN_PASSWORD)}`)
+    .then(r => r.json())
+    .then(res => {
+      if (res.status !== 'ok') { area.innerHTML = '<div class="admin-empty">⚠️ 密碼驗證失敗，請確認 Apps Script 設定。</div>'; return; }
+      adminData = res.data || [];
+      renderAdminTable(adminData);
+      updateAdminStats(adminData);
+    })
+    .catch(() => {
+      area.innerHTML = '<div class="admin-empty">⚠️ 無法連線到後台，請確認 Apps Script 網址是否正確。</div>';
+    });
+}
+
+function refreshAdminData() {
+  loadAdminData();
+  showToast('🔄 資料已重新整理');
+}
+
+function renderAdminTable(rows) {
+  const area = document.getElementById('adminTableArea');
+  if (rows.length <= 1) {
+    area.innerHTML = '<div class="admin-empty">📭 目前尚無作答記錄</div>';
+    return;
+  }
+
+  const headers = rows[0];
+  const body    = rows.slice(1);
+
+  const levelTag = (val) => {
+    if (!val) return '—';
+    const cls = val.includes('1') ? 'l1' : val.includes('2') ? 'l2' : 'l3';
+    return `<span class="level-tag ${cls}">${val}</span>`;
+  };
+
+  const levelColIdx = headers.indexOf('Level等級');
+
+  const ths  = headers.map(h => `<th>${h}</th>`).join('');
+  const trs  = body.map(row =>
+    '<tr>' + row.map((cell, i) =>
+      `<td>${i === levelColIdx ? levelTag(cell) : (cell ?? '—')}</td>`
+    ).join('') + '</tr>'
+  ).join('');
+
+  area.innerHTML = `
+    <table class="admin-table">
+      <thead><tr>${ths}</tr></thead>
+      <tbody>${trs}</tbody>
+    </table>`;
+}
+
+function updateAdminStats(rows) {
+  if (rows.length <= 1) return;
+  const data = rows.slice(1);
+  const total = data.length;
+  document.getElementById('statTotal').textContent = total;
+
+  const scoreCol = rows[0].indexOf('答對題數');
+  const levelCol = rows[0].indexOf('Level等級');
+
+  if (scoreCol >= 0) {
+    const avg = data.reduce((s, r) => {
+      const n = parseInt(r[scoreCol]);
+      return s + (isNaN(n) ? 0 : n);
+    }, 0) / total;
+    document.getElementById('statAvg').textContent = avg.toFixed(1);
+  }
+
+  if (levelCol >= 0) {
+    const l3 = data.filter(r => r[levelCol] && r[levelCol].includes('3')).length;
+    const l1 = data.filter(r => r[levelCol] && r[levelCol].includes('1')).length;
+    document.getElementById('statL3').textContent = l3;
+    document.getElementById('statL1').textContent = l1;
+  }
+}
+
+function exportCSV() {
+  if (!adminData.length) { showToast('⚠️ 尚無資料可匯出'); return; }
+  const bom = '﻿';
+  const csv = bom + adminData.map(row =>
+    row.map(cell => `"${String(cell ?? '').replace(/"/g,'""')}"`).join(',')
+  ).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `數位安全測驗成績_${new Date().toLocaleDateString('zh-TW')}.csv`;
+  a.click();
+  showToast('📥 CSV 已下載');
 }
 
 function resetQuiz() {
